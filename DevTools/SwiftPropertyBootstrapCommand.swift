@@ -193,7 +193,12 @@ class SwiftPropertyBootstrapCommand: NSObject, XCSourceEditorCommand {
         }
         return nil
     }
-
+    
+    private func findEndMarkLine(_ buffer: XCSourceTextBuffer) -> Int? {
+        let range = NSMakeRange(0, buffer.lines.count)
+        return findFirstStringInLines(endMark, buffer: buffer, in: range)
+    }
+    
     private func findFunctionClosingBraceLine(_ buffer: XCSourceTextBuffer, startingAt start: Int) -> Int? {
         guard let endLine = findClassClosingBraceLine(buffer) else { return nil }
         let range = NSMakeRange(start, endLine - start)
@@ -201,11 +206,11 @@ class SwiftPropertyBootstrapCommand: NSObject, XCSourceEditorCommand {
     }
 
     private func createVariableSection(_ name: String, buffer: XCSourceTextBuffer) {
-        if let targetLine = findClassClosingBraceLine(buffer) {
+        if let targetLine = findEndMarkLine(buffer) {
             let variableMark = self.variableMark(name)
             let initializeFunction = "    private func initialize\(properName(name))() {\n\n    }"
             let constrainFunction = "    private func constrain\(properName(name))() {\n\n    }"
-            let insertion = "\(variableMark)\n\n\(initializeFunction)\n\n\(constrainFunction)\n"
+            let insertion = "\(variableMark)\n\n\(initializeFunction)\n\n\(constrainFunction)\n\n"
             var isPreviousNewline = false
             var completeBuffer = ""
             var lineNumber = 0
